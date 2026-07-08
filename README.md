@@ -3,8 +3,12 @@
 <h4>Welcome to My Git  
 
 Everybody can come and see My contents</h4>
-<!--
-**Uhjinkim/Uhjinkim** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+
+## About Me
+
+- 🌱 Learning Spring Boot & AI Engineering
+- 🚀 Interested in Kotlin Multiplatform
+<!-- **Uhjinkim/Uhjinkim** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
 Here are some ideas to get you started:
 
