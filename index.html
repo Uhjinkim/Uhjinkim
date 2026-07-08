@@ -34,6 +34,11 @@
     font-size: 24px;
     margin-bottom: 16px;
   }
+  #next {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 16px;
+  }
   button {
     width: 100%;
     padding: 12px;
@@ -70,6 +75,10 @@
 
   <div class="panel">
     <div class="score">점수: <span id="score">0</span></div>
+
+    <p>다음 블록</p>
+    <canvas id="next" width="120" height="120"></canvas>
+
     <p>조작</p>
     <p>← → 이동</p>
     <p>↓ 빠르게</p>
@@ -89,6 +98,10 @@
 <script>
 const canvas = document.getElementById("board");
 const ctx = canvas.getContext("2d");
+
+const nextCanvas = document.getElementById("next");
+const nextCtx = nextCanvas.getContext("2d");
+
 const scoreEl = document.getElementById("score");
 const overlay = document.getElementById("overlay");
 const titleEl = document.getElementById("title");
@@ -123,6 +136,7 @@ const SHAPES = [
 
 let board;
 let piece;
+let nextPiece;
 let score;
 let running;
 let dropCounter;
@@ -149,6 +163,32 @@ function drawCell(x, y, value) {
   ctx.strokeRect(x * SIZE, y * SIZE, SIZE, SIZE);
 }
 
+function drawNextCell(x, y, value, cell, offsetX, offsetY) {
+  nextCtx.fillStyle = COLORS[value];
+  nextCtx.fillRect(offsetX + x * cell, offsetY + y * cell, cell, cell);
+  nextCtx.strokeStyle = "#111827";
+  nextCtx.strokeRect(offsetX + x * cell, offsetY + y * cell, cell, cell);
+}
+
+function drawNext() {
+  nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+
+  if (!nextPiece) return;
+
+  const matrix = nextPiece.matrix;
+  const cell = 24;
+  const offsetX = (nextCanvas.width - matrix[0].length * cell) / 2;
+  const offsetY = (nextCanvas.height - matrix.length * cell) / 2;
+
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) {
+        drawNextCell(x, y, value, cell, offsetX, offsetY);
+      }
+    });
+  });
+}
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -163,6 +203,8 @@ function draw() {
       if (value) drawCell(piece.x + x, piece.y + y, value);
     });
   });
+
+  drawNext();
 }
 
 function collide() {
@@ -170,9 +212,7 @@ function collide() {
     for (let x = 0; x < piece.matrix[y].length; x++) {
       if (
         piece.matrix[y][x] &&
-        (
-          board[piece.y + y]?.[piece.x + x] !== 0
-        )
+        board[piece.y + y]?.[piece.x + x] !== 0
       ) {
         return true;
       }
@@ -227,7 +267,9 @@ function drop() {
     piece.y--;
     merge();
     clearLines();
-    piece = createPiece();
+
+    piece = nextPiece;
+    nextPiece = createPiece();
 
     if (collide()) {
       endGame();
@@ -263,6 +305,7 @@ function update(time = 0) {
 function startGame() {
   board = createBoard();
   piece = createPiece();
+  nextPiece = createPiece();
   score = 0;
   running = true;
   dropCounter = 0;
@@ -270,7 +313,11 @@ function startGame() {
   dropInterval = 700;
 
   scoreEl.textContent = score;
+  titleEl.textContent = "테트리스";
+  resultEl.textContent = "";
+  startBtn.textContent = "시작";
   overlay.style.display = "none";
+
   update();
 }
 
@@ -288,11 +335,13 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") move(-1);
   if (e.key === "ArrowRight") move(1);
   if (e.key === "ArrowDown") drop();
+
   if (e.key === "ArrowUp") {
     const old = piece.matrix;
     piece.matrix = rotate(piece.matrix);
     if (collide()) piece.matrix = old;
   }
+
   if (e.code === "Space") hardDrop();
 
   draw();
@@ -302,6 +351,7 @@ startBtn.addEventListener("click", startGame);
 
 board = createBoard();
 piece = createPiece();
+nextPiece = createPiece();
 draw();
 </script>
 
